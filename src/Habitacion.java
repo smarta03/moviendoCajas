@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Scanner;
+//import java.util.Scanner;
 
 public class Habitacion {
 
@@ -102,11 +102,9 @@ public class Habitacion {
 				//los movimientos. Actualiza cajasTemp y destinosTemp
 				//IMPORTANTE!!!La caja en el destino se indica en la habitacion
 				robot.moverRobCajaDestino(camino[contador], camino[contador+1], 
-						cajasTemp, destinosTemp, habitacion);
-
+						cajasTemp, destinosTemp, habitacion, contador);
 			}
-
-
+			
 
 			contador += 2;
 		}
@@ -118,7 +116,7 @@ public class Habitacion {
 		//Comprobar que el robot se puede mover
 		boolean robotPuedeMoverse = robot.puedoMoverme(habitacion, cajasTemp, destinosTemp);
 
-		//Comprobar que las cajas se pueden mover. Tener en cuenta cajas ya resueltas
+		//Comprobar que las cajas se pueden mover. Tener en cuenta cajas ya resueltas.
 		boolean cajaMov = cajaPuedeMoverse(cajasTemp, indice);
 
 		//Comprobar que los destinos son accesibles. Tener en cuenta destinos ya resueltos.
@@ -126,8 +124,7 @@ public class Habitacion {
 		//una caja que no se esta moviendo en ese momento
 		boolean destinoAccesible = destinoEsAccesible(destinosTemp, cajasTemp, indice);
 
-
-		return robotPuedeMoverse && cajaMov;
+		return robotPuedeMoverse && cajaMov && destinoAccesible;
 	}
 
 	private boolean destinoEsAccesible(int[][] destinosTemp, int[][] cajasTemp, int indice) {
@@ -144,7 +141,7 @@ public class Habitacion {
 		boolean derecha = true;
 		boolean abajo = true;
 		boolean izquierda = true;
-		
+
 		boolean cajaArriba = false;
 		boolean cajaDerecha = false;
 		boolean cajaAbajo = false;
@@ -179,43 +176,58 @@ public class Habitacion {
 				habitacion.get(destinosTemp[indice][1]).charAt(destinosTemp[indice][0]-1) == '*') {
 			izquierda = false;
 		}
-		
+
 		//Si esta totalemente encerrado ya no es accesible
 		if( !arriba && !derecha && !abajo && !izquierda) {
 			return false;
 		}
-		
+
 		//CASO ESPECIAL: DESTINO ABIERTO SOLO POR UN PUNTO QUE LO TAPA UNA CAJA, COMPROBAR QUE ESA CAJA ES LA
 		//QUE SE ESTA MOVIENDO AHORA, SI ES OTRA EL DESTINO NO ES ACCESIBLE
-		
+
 		//Ver si hay alguna caja alrededor del destino
 		for (int i=0; i < cajasTemp.length; i++) {
 			//Comprobar si hay alguna caja con cordenadas x e y que este alrededor del destino
 			//Arriba
 			if(cajasTemp[i][0] == destinosTemp[indice][0] && cajasTemp[i][1]+1 == destinosTemp[indice][1]) {
 				cajaArriba = true;
-			//Derecha
-			} else if(cajasTemp[i][0] == destinosTemp[indice][0] && cajasTemp[i][1]+1 == destinosTemp[indice][1]) {
-				cajaArriba = true;
+				arriba = false;
+				//Derecha
+			} else if(cajasTemp[i][0]-1 == destinosTemp[indice][0] && cajasTemp[i][1] == destinosTemp[indice][1]) {
+				cajaDerecha = true;
+				derecha = false;
+				//Abajo
+			} else if(cajasTemp[i][0] == destinosTemp[indice][0] && cajasTemp[i][1]-1 == destinosTemp[indice][1]) {
+				cajaAbajo = true;
+				abajo = false;
+				//Izquierda
+			} else if(cajasTemp[i][0]+1 == destinosTemp[indice][0] && cajasTemp[i][1] == destinosTemp[indice][1]) {
+				cajaIzquierda = true;
+				izquierda = false;
 			}
 		}
-		
+
 		//La caja que se esta empujando esta encima del destino
-		if(arriba && destinosTemp[indice][0] == cajasTemp[indice][0] && destinosTemp[indice][1] == cajasTemp[indice][1]+1) {
+		if(cajaArriba && destinosTemp[indice][0] == cajasTemp[indice][0] && destinosTemp[indice][1] == cajasTemp[indice][1]+1) {
 			arriba = true;
-		//La caja que se esta empujando esta a la derecha del destino
-		} else if (derecha && destinosTemp[indice][0] == cajasTemp[indice][0]-1 && destinosTemp[indice][1] == cajasTemp[indice][1]) {
+			//La caja que se esta empujando esta a la derecha del destino
+		} else if (cajaDerecha && destinosTemp[indice][0] == cajasTemp[indice][0]-1 && destinosTemp[indice][1] == cajasTemp[indice][1]) {
 			derecha = true;
-		//La caja que se esta empujando esta debajo del destino
-		} else if(abajo && destinosTemp[indice][0] == cajasTemp[indice][0] && destinosTemp[indice][1] == cajasTemp[indice][1]-1) {
+			//La caja que se esta empujando esta debajo del destino
+		} else if(cajaAbajo && destinosTemp[indice][0] == cajasTemp[indice][0] && destinosTemp[indice][1] == cajasTemp[indice][1]-1) {
 			abajo = true;
-		//La caja que se esta empujando esta a la izquierda del destino
-		} else if (derecha && destinosTemp[indice][0] == cajasTemp[indice][0]-1 && destinosTemp[indice][1] == cajasTemp[indice][1]) {
+			//La caja que se esta empujando esta a la izquierda del destino
+		} else if (cajaIzquierda && destinosTemp[indice][0] == cajasTemp[indice][0]+1 && destinosTemp[indice][1] == cajasTemp[indice][1]) {
 			izquierda = true;
 		}
-		
+
 		//Compruebo ya si el destino tiene al menos un lado abierto
-		
+		if( !arriba && !derecha && !abajo && !izquierda) {
+			return false;
+		} else {
+			return true;
+		}
+
 	}
 
 	private boolean cajaPuedeMoverse(int[][] cajasTemp, int indice) {
