@@ -136,7 +136,7 @@ public class Robot {
 			libreAba = true;
 		}
 		
-		if(libreIzq==false && libreArr==true && libreDch==true && libreAba==true) {
+		if(libreIzq==false && libreArr==false && libreDch==false && libreAba==false) {
 			return false;
 		} else {
 			return true;

@@ -40,22 +40,24 @@ public class Habitacion {
 
 		boolean[] esSolucion = {true};
 		boolean[] esMasCorto = {true};
-		String regRobot = "x";
+		String regRobotTemp = "x";
+		String regRobotSolucion = "";
 		int originalX = robot.getX();
 		int originalY = robot.getY();
 		
 		for (int i=0; i<Math.pow(cajas.length,destinos.length); i++) {
-			regRobot += "x";
+			regRobotTemp += "x";
 		}
 		
 		//Mover robot segun combinaciones
 		for (int i=0; i<parciales.size(); i++) {
-			vueltaAtras(parciales.get(i), esSolucion, esMasCorto, regRobot);
+			vueltaAtras(parciales.get(i), esSolucion, esMasCorto, regRobotTemp);
 			//Aqui compruebo si devuelve que hay solucion o si el
 			//registro del robot es mas largo. Restablece estas
 			//variables
 			if(esSolucion[0] && esMasCorto[0]) {
-				regRobot = robot.getHistorialMovimientos();
+				regRobotTemp = robot.getHistorialMovimientos();
+				regRobotSolucion = regRobotTemp.toString();
 			}
 			
 			//Reiniciar registro robot y almanarlo en otro sitio
@@ -74,7 +76,6 @@ public class Habitacion {
 		int[][] camino = new int[cajas.length*2][2];
 		camino = cadenaACoord(solParc);
 		int contador = 0;
-		int contador2 = 0;
 		
 		int[][] cajasTemp = new int[camino.length/2][2];
 		int[][] destinosTemp = new int[camino.length/2][2];
@@ -91,7 +92,7 @@ public class Habitacion {
 			//Las cajas y destinos las actualiza el robot.
 			//Puede recibir cajas ya solucionadas.
 			
-			if(!existeSolucion(cajasTemp, destinosTemp)) {
+			if(!existeSolucion(cajasTemp, destinosTemp, contador)) {
 				esSolucion[0] = false;
 			} else if(robot.getHistorialMovimientos().length()>regRobot.length()) {
 				esMasCorto[0] = false;
@@ -111,30 +112,79 @@ public class Habitacion {
 		
 	}
 
-	private boolean existeSolucion(int[][] cajasTemp, int[][] destinosTemp) {
+	private boolean existeSolucion(int[][] cajasTemp, int[][] destinosTemp, int indice) {
 		
 		//Comprobar que el robot se puede mover
 		boolean robotPuedeMoverse = robot.puedoMoverme(habitacion, cajasTemp, destinosTemp);
 		
 		//Comprobar que las cajas se pueden mover. Tener en cuenta cajas ya resueltas
-		boolean cajaMov = cajaPuedeMoverse(cajasTemp, destinosTemp);
+		boolean cajaMov = cajaPuedeMoverse(cajasTemp, destinosTemp, indice);
 		
 		//Compromar que los destinos son accesibles. Tener en cuenta destinos ya resueltos.
 		
 		return false;
 	}
 
-	private boolean cajaPuedeMoverse(int[][] cajasTemp, int[][] destinosTemp) {
+	private boolean cajaPuedeMoverse(int[][] cajasTemp, int[][] destinosTemp, int indice) {
 		// TODO Auto-generated method stub
 		
-		for (int i=0; i<cajasTemp.length;i++) {
-			//Si la caja no esta en un destino
-			if(cajasTemp[i][0]!=destinosTemp[i][0] && cajasTemp[i][1]!=destinosTemp[i][1]) {
-				
-			} 
+		if(indice!=0) {
+			indice = indice / 2;
 		}
 		
+		boolean arriba = true;
+		boolean derecha = true;
+		boolean abajo = true;
+		boolean izquierda = true;
+		
+		
+		//cuatro posibilidades para que una caja no pueda moverse
+		
+		//arriba
+		if (habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '0' ||
+			habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '1' ||
+			habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '*') {
+			arriba = false;
+		}
+		
+		//derecha
+		if (habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]+1) == '0' ||
+				habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]+1) == '1' ||
+				habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]+1) == '*') {
+				derecha = false;
+			}
+		
+		//abajo
+		if (habitacion.get(cajasTemp[indice][1]+1).charAt(cajasTemp[indice][0]) == '0' ||
+				habitacion.get(cajasTemp[indice][1]+1).charAt(cajasTemp[indice][0]) == '1' ||
+				habitacion.get(cajasTemp[indice][1]+1).charAt(cajasTemp[indice][0]) == '*') {
+				abajo = false;
+			}
+		
+		//izquierda
+		if (habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]-1) == '0' ||
+				habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]-1) == '1' ||
+				habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]-1) == '*') {
+				izquierda = false;
+			}
+		
+		//comprobar las posibilidades
+		// arriba derecha
+		if(!arriba && !derecha) {
 		return false;
+		// derecha abajo
+		} else if(!derecha && !abajo) {
+			return false;
+		// abajo izquierda
+		} else if(!abajo && !izquierda) {
+			return false;
+		//izquierda arriba
+		} else if(!izquierda && !arriba) {
+			return false;
+		} else {
+			return true;
+		}
+		
 	}
 
 	private int[][] cadenaACoord(String solParc) {
