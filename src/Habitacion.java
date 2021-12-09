@@ -32,10 +32,10 @@ public class Habitacion {
 		System.out.println("destinos");
 		for (int i=0; i<destinos.length; i++) { System.out.println(destinos[i][0] + " "
 				+ destinos[i][1]); }
-		
+
 		//Devuelvo array con todas las combinaciones de movimientos
 		ArrayList<String> parciales = new ArrayList<String>();
-			
+
 		parciales = calculadorSolucionesParciales();
 
 		boolean[] esSolucion = {true};
@@ -44,11 +44,11 @@ public class Habitacion {
 		String regRobotSolucion = "";
 		int originalX = robot.getX();
 		int originalY = robot.getY();
-		
+
 		for (int i=0; i<Math.pow(cajas.length,destinos.length); i++) {
 			regRobotTemp += "x";
 		}
-		
+
 		//Mover robot segun combinaciones
 		for (int i=0; i<parciales.size(); i++) {
 			vueltaAtras(parciales.get(i), esSolucion, esMasCorto, regRobotTemp);
@@ -59,7 +59,7 @@ public class Habitacion {
 				regRobotTemp = robot.getHistorialMovimientos();
 				regRobotSolucion = regRobotTemp.toString();
 			}
-			
+
 			//Reiniciar registro robot y almanarlo en otro sitio
 			//Devolver al robot y las cajas a la posicion original
 			esSolucion[0]=true;
@@ -72,147 +72,239 @@ public class Habitacion {
 	}
 
 	private void vueltaAtras(String solParc, boolean[] esSolucion, boolean[] esMasCorto, String regRobot) {
-		
+
 		int[][] camino = new int[cajas.length*2][2];
 		camino = cadenaACoord(solParc);
 		int contador = 0;
-		
+
 		int[][] cajasTemp = new int[camino.length/2][2];
 		int[][] destinosTemp = new int[camino.length/2][2];
-		
+
 		for(int i=0, j=0; i<cajasTemp.length*2; i+= 2, j++) {
 			cajasTemp[j]=camino[i];
 			destinosTemp[j]=camino[i+1];
 		}
-		
+
+
 		while(esSolucion[0] && esMasCorto[0] && contador<camino.length) {
-			
+
 			//Comprueba si hay solucion para esas cajas y destinos en esa habitacion y si
 			// el robot se puede mover.
 			//Las cajas y destinos las actualiza el robot.
 			//Puede recibir cajas ya solucionadas.
-			
+
 			if(!existeSolucion(cajasTemp, destinosTemp, contador)) {
 				esSolucion[0] = false;
 			} else if(robot.getHistorialMovimientos().length()>regRobot.length()) {
 				esMasCorto[0] = false;
 			} else {
 				//Mueve el robot a la siguiente caja y la lleva al destino registrando
-				//los movimientos. Actualiza cajasTemo y destinosTemp
+				//los movimientos. Actualiza cajasTemp y destinosTemp
 				//IMPORTANTE!!!La caja en el destino se indica en la habitacion
 				robot.moverRobCajaDestino(camino[contador], camino[contador+1], 
 						cajasTemp, destinosTemp, habitacion);
-				
+
 			}
-			
-			
-			
+
+
+
 			contador += 2;
 		}
-		
+
 	}
 
 	private boolean existeSolucion(int[][] cajasTemp, int[][] destinosTemp, int indice) {
-		
+
 		//Comprobar que el robot se puede mover
 		boolean robotPuedeMoverse = robot.puedoMoverme(habitacion, cajasTemp, destinosTemp);
-		
+
 		//Comprobar que las cajas se pueden mover. Tener en cuenta cajas ya resueltas
-		boolean cajaMov = cajaPuedeMoverse(cajasTemp, destinosTemp, indice);
-		
-		//Compromar que los destinos son accesibles. Tener en cuenta destinos ya resueltos.
-		
-		return false;
+		boolean cajaMov = cajaPuedeMoverse(cajasTemp, indice);
+
+		//Comprobar que los destinos son accesibles. Tener en cuenta destinos ya resueltos.
+		//Necesito pasarle las cajas por el caso especial en el que un destino este tapado por
+		//una caja que no se esta moviendo en ese momento
+		boolean destinoAccesible = destinoEsAccesible(destinosTemp, cajasTemp, indice);
+
+
+		return robotPuedeMoverse && cajaMov;
 	}
 
-	private boolean cajaPuedeMoverse(int[][] cajasTemp, int[][] destinosTemp, int indice) {
-		// TODO Auto-generated method stub
-		
+	private boolean destinoEsAccesible(int[][] destinosTemp, int[][] cajasTemp, int indice) {
+
+		//El indice servira el mismo tanto para los destinos como para las cajas, porque la caja
+		//que se va a mover es justo la anterior del camino al destino
 		if(indice!=0) {
 			indice = indice / 2;
 		}
-		
+
+		//Vemos primero que tiene en las cuatro posiciones arriba, derecha, abajo, izquierda.
+
 		boolean arriba = true;
 		boolean derecha = true;
 		boolean abajo = true;
 		boolean izquierda = true;
 		
-		
+		boolean cajaArriba = false;
+		boolean cajaDerecha = false;
+		boolean cajaAbajo = false;
+		boolean cajaIzquierda = false;
+
 		//cuatro posibilidades para que una caja no pueda moverse
-		
+
 		//arriba
-		if (habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '0' ||
-			habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '1' ||
-			habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '*') {
+		if (habitacion.get(destinosTemp[indice][1]-1).charAt(destinosTemp[indice][0]) == '0' ||
+				habitacion.get(destinosTemp[indice][1]-1).charAt(destinosTemp[indice][0]) == '1' ||
+				habitacion.get(destinosTemp[indice][1]-1).charAt(destinosTemp[indice][0]) == '*') {
 			arriba = false;
 		}
+
+		//derecha
+		if (habitacion.get(destinosTemp[indice][1]).charAt(destinosTemp[indice][0]+1) == '0' ||
+				habitacion.get(destinosTemp[indice][1]).charAt(destinosTemp[indice][0]+1) == '1' ||
+				habitacion.get(destinosTemp[indice][1]).charAt(destinosTemp[indice][0]+1) == '*') {
+			derecha = false;
+		}
+
+		//abajo
+		if (habitacion.get(destinosTemp[indice][1]+1).charAt(destinosTemp[indice][0]) == '0' ||
+				habitacion.get(destinosTemp[indice][1]+1).charAt(destinosTemp[indice][0]) == '1' ||
+				habitacion.get(destinosTemp[indice][1]+1).charAt(destinosTemp[indice][0]) == '*') {
+			abajo = false;
+		}
+
+		//izquierda
+		if (habitacion.get(destinosTemp[indice][1]).charAt(destinosTemp[indice][0]-1) == '0' ||
+				habitacion.get(destinosTemp[indice][1]).charAt(destinosTemp[indice][0]-1) == '1' ||
+				habitacion.get(destinosTemp[indice][1]).charAt(destinosTemp[indice][0]-1) == '*') {
+			izquierda = false;
+		}
 		
+		//Si esta totalemente encerrado ya no es accesible
+		if( !arriba && !derecha && !abajo && !izquierda) {
+			return false;
+		}
+		
+		//CASO ESPECIAL: DESTINO ABIERTO SOLO POR UN PUNTO QUE LO TAPA UNA CAJA, COMPROBAR QUE ESA CAJA ES LA
+		//QUE SE ESTA MOVIENDO AHORA, SI ES OTRA EL DESTINO NO ES ACCESIBLE
+		
+		//Ver si hay alguna caja alrededor del destino
+		for (int i=0; i < cajasTemp.length; i++) {
+			//Comprobar si hay alguna caja con cordenadas x e y que este alrededor del destino
+			//Arriba
+			if(cajasTemp[i][0] == destinosTemp[indice][0] && cajasTemp[i][1]+1 == destinosTemp[indice][1]) {
+				cajaArriba = true;
+			//Derecha
+			} else if(cajasTemp[i][0] == destinosTemp[indice][0] && cajasTemp[i][1]+1 == destinosTemp[indice][1]) {
+				cajaArriba = true;
+			}
+		}
+		
+		//La caja que se esta empujando esta encima del destino
+		if(arriba && destinosTemp[indice][0] == cajasTemp[indice][0] && destinosTemp[indice][1] == cajasTemp[indice][1]+1) {
+			arriba = true;
+		//La caja que se esta empujando esta a la derecha del destino
+		} else if (derecha && destinosTemp[indice][0] == cajasTemp[indice][0]-1 && destinosTemp[indice][1] == cajasTemp[indice][1]) {
+			derecha = true;
+		//La caja que se esta empujando esta debajo del destino
+		} else if(abajo && destinosTemp[indice][0] == cajasTemp[indice][0] && destinosTemp[indice][1] == cajasTemp[indice][1]-1) {
+			abajo = true;
+		//La caja que se esta empujando esta a la izquierda del destino
+		} else if (derecha && destinosTemp[indice][0] == cajasTemp[indice][0]-1 && destinosTemp[indice][1] == cajasTemp[indice][1]) {
+			izquierda = true;
+		}
+		
+		//Compruebo ya si el destino tiene al menos un lado abierto
+		
+	}
+
+	private boolean cajaPuedeMoverse(int[][] cajasTemp, int indice) {
+
+		if(indice!=0) {
+			indice = indice / 2;
+		}
+
+		boolean arriba = true;
+		boolean derecha = true;
+		boolean abajo = true;
+		boolean izquierda = true;
+
+
+		//cuatro posibilidades para que una caja no pueda moverse
+
+		//arriba
+		if (habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '0' ||
+				habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '1' ||
+				habitacion.get(cajasTemp[indice][1]-1).charAt(cajasTemp[indice][0]) == '*') {
+			arriba = false;
+		}
+
 		//derecha
 		if (habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]+1) == '0' ||
 				habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]+1) == '1' ||
 				habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]+1) == '*') {
-				derecha = false;
-			}
-		
+			derecha = false;
+		}
+
 		//abajo
 		if (habitacion.get(cajasTemp[indice][1]+1).charAt(cajasTemp[indice][0]) == '0' ||
 				habitacion.get(cajasTemp[indice][1]+1).charAt(cajasTemp[indice][0]) == '1' ||
 				habitacion.get(cajasTemp[indice][1]+1).charAt(cajasTemp[indice][0]) == '*') {
-				abajo = false;
-			}
-		
+			abajo = false;
+		}
+
 		//izquierda
 		if (habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]-1) == '0' ||
 				habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]-1) == '1' ||
 				habitacion.get(cajasTemp[indice][1]).charAt(cajasTemp[indice][0]-1) == '*') {
-				izquierda = false;
-			}
-		
+			izquierda = false;
+		}
+
 		//comprobar las posibilidades
 		// arriba derecha
 		if(!arriba && !derecha) {
-		return false;
-		// derecha abajo
+			return false;
+			// derecha abajo
 		} else if(!derecha && !abajo) {
 			return false;
-		// abajo izquierda
+			// abajo izquierda
 		} else if(!abajo && !izquierda) {
 			return false;
-		//izquierda arriba
+			//izquierda arriba
 		} else if(!izquierda && !arriba) {
 			return false;
 		} else {
 			return true;
 		}
-		
+
 	}
 
 	private int[][] cadenaACoord(String solParc) {
-		
+
 		int[][] coor = new int[cajas.length*2][2];
 		int contador = 0;
 		String temp = "";
-		
+
 		String[] puntos = solParc.split("|");
-		
+
 		for (int i=0; i<puntos.length;i++) {
 			try {
 				Integer.parseInt(puntos[i]);
 				temp += puntos[i];
 			}catch (Exception e) {
 				if(puntos[i].equals("|")) {
-					
+
 					coor[contador][1]=Integer.parseInt(temp);
 					contador++;
 				} else {
 					coor[contador][0]=Integer.parseInt(temp);
 				}
-				
+
 				temp="";
-				
+
 			}
 		}
-		
+
 		return coor;
 	}
 
@@ -231,7 +323,7 @@ public class Habitacion {
 		for(int i=0; i<cajas.length;i++) {
 			cajasTemp.add(cajas[i][0]+","+cajas[i][1]);
 		}
-		
+
 		for(int i=0; i<destinos.length;i++) {
 			destinosTemp.add(destinos[i][0]+","+destinos[i][1]);
 		}
@@ -239,7 +331,7 @@ public class Habitacion {
 		permutarSimple("",cajasTemp,permCajas);
 
 		permutarSimple("",destinosTemp,permDestinos);
-		
+
 		ArrayList<ArrayList<String>> permCajas2 = new ArrayList<ArrayList<String>>();
 		ArrayList<String> permCajasTemp = new ArrayList<String>();
 		int contador = 0;
@@ -257,9 +349,9 @@ public class Habitacion {
 			permCajas2.add(clon);
 			permCajasTemp.removeAll(permCajasTemp);
 			contador=0;
-			
+
 		}
-		
+
 		ArrayList<ArrayList<String>> permDestinos2 = new ArrayList<ArrayList<String>>();
 		ArrayList<String> permDestinosTemp = new ArrayList<String>();
 		contador = 0;
@@ -277,27 +369,27 @@ public class Habitacion {
 			permDestinos2.add(clon2);
 			permDestinosTemp.removeAll(permDestinosTemp);
 			contador=0;
-			
+
 		}
-		
+
 		//1.3 union de combinaciones teniendo en cuenta que siempre es caja-destini-caja-destino...
 
-		
+
 		for(int i=0; i<permCajas2.size();i++) {
-			
+
 			for(int j=0; j<permDestinos2.size();j++) {
 				String s = "";
 				//combinaciones.add(permCajas2.get(i).get(j));
-				
+
 				for (int k=0; k<permDestinos2.get(j).size();k++) {
-					
+
 					s = s + permCajas2.get(i).get(k)+"|"+permDestinos2.get(j).get(k)+"|";
 				}
 				combinaciones.add(s);
 				s="";
-				
+
 			}
-			
+
 		}
 		//Orden de factorial(n)=k numero combinaciones cajas o destinos, n numero de elementod
 		//k*k= combinaciones totales
