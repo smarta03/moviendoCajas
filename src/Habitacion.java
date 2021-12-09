@@ -112,8 +112,8 @@ public class Habitacion {
 			contador += 2;
 		}
 
-		// EL ROBOT NO HA PODIDO REALIZAR EL MOVIENTO, EL REGISTRO DEL ROBOT PASA A SER
-		// EL TEMPORAL ANTERIOR
+		// EL ROBOT NO HA PODIDO REALIZAR EL MOVIMIENTO, EL REGISTRO DEL ROBOT PASA A
+		// SER EL TEMPORAL ANTERIOR
 		if (movRealizado == false) {
 			robot.removeHistorialMovimientos();
 			robot.addMovimiento(regRobot);
@@ -121,8 +121,6 @@ public class Habitacion {
 
 	}
 
-
-	
 	private boolean existeSolucion(int[][] cajasTemp, int[][] destinosTemp, int indice) {
 
 		// Comprobar que el robot se puede mover
@@ -144,8 +142,6 @@ public class Habitacion {
 		return robotPuedeMoverse && cajaMov && cajaADestino && destinoAccesible;
 	}
 
-	
-	
 	private boolean destinoEsAccesible(int[][] destinosTemp, int[][] cajasTemp, int indice) {
 
 		// El indice servira el mismo tanto para los destinos como para las cajas,
@@ -346,8 +342,8 @@ public class Habitacion {
 
 		// Comprobar linea de la derecha de la caja
 		for (int i = 0; i < n && libreDerecha == false; i++) {
-			if (habitacion.get(caja[0] + 1).charAt(i) == '#' || habitacion.get(caja[0] + 1).charAt(i) == '!'
-					|| habitacion.get(caja[0] + 1).charAt(i) == '-') {
+			if (habitacion.get(i).charAt(caja[0] + 1) == '#' || habitacion.get(i).charAt(caja[0] + 1) == '!'
+					|| habitacion.get(i).charAt(caja[0] + 1) == '-') {
 				libreDerecha = true;
 			}
 		}
@@ -356,15 +352,15 @@ public class Habitacion {
 		for (int i = 0; i < m && libreAbajo == false; i++) {
 			if (habitacion.get(caja[1] + 1).charAt(i) == '#' || habitacion.get(caja[1] + 1).charAt(i) == '!'
 					|| habitacion.get(caja[1] + 1).charAt(i) == '-') {
-				libreDerecha = true;
+				libreAbajo = true;
 			}
 		}
 
-		// Comprobar linea de la derecha de la caja
+		// Comprobar linea de la izquierda de la caja
 		for (int i = 0; i < n && libreIzquierda == false; i++) {
-			if (habitacion.get(caja[0] - 1).charAt(i) == '#' || habitacion.get(caja[0] - 1).charAt(i) == '!'
-					|| habitacion.get(caja[0] - 1).charAt(i) == '-') {
-				libreDerecha = true;
+			if (habitacion.get(i).charAt(caja[0] - 1) == '#' || habitacion.get(i).charAt(caja[0] - 1) == '!'
+					|| habitacion.get(i).charAt(caja[0] - 1) == '-') {
+				libreIzquierda = true;
 			}
 		}
 
@@ -424,8 +420,6 @@ public class Habitacion {
 
 	}
 
-	
-	
 	private int[][] cadenaACoord(String solParc) {
 
 		int[][] coor = new int[cajas.length * 2][2];
@@ -618,4 +612,40 @@ public class Habitacion {
 		}
 	}
 
+//	public void printHabitacion2() {
+//
+//		char[][] habitacionChar = new char[n][m];
+//		int[] cajaTemp = new int[2];
+//		int[] destinoTemp = new int[2];
+//
+//		int contadorCajas = 0;
+//		int contadorDestinos = 0;
+//
+//		for (int i = 0; i < habitacionChar.length; i++) {
+//			for (int j = 0; j < habitacionChar[0].length; j++) {
+//				cajaTemp[0] = cajas[contadorCajas][0];
+//				cajaTemp[1] = cajas[contadorCajas][1];
+//				destinoTemp[0] = destinos[contadorDestinos][0];
+//				destinoTemp[1] = destinos[contadorDestinos][1];
+//				habitacionChar[i][j] = habitacion.get(i).charAt(j);
+//				if (cajaTemp[0] == j && cajaTemp[1] == i) {
+//					habitacionChar[i][j] = '#';
+//					if (contadorCajas < cajas.length-1)
+//						contadorCajas++;
+//				}
+//				if (destinoTemp[0] == j && destinoTemp[1] == i) {
+//					habitacionChar[i][j] = '!';
+//					if (contadorDestinos < destinos.length-1)
+//						contadorDestinos++;
+//				}
+//				if(robot.getY()==i && robot.getX()==j) {
+//					habitacionChar[i][j] = '@';
+//				}
+//				System.out.print(habitacionChar[i][j]);
+//			}
+//			System.out.println();
+//		}
+//
+//		
+//	}
 }
