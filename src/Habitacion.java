@@ -105,8 +105,12 @@ public class Habitacion {
 				// Mueve el robot a la siguiente caja y la lleva al destino registrando
 				// los movimientos. Actualiza cajasTemp y destinosTemp
 				// IMPORTANTE!!!La caja en el destino se indica en la habitacion
-				movRealizado = robot.moverRobCajaDestino(camino[contador], camino[contador + 1], cajasTemp,
-						destinosTemp, habitacion, contador);
+				regRobot = robot.moverRobCajaDestino(camino[contador], camino[contador + 1], cajasTemp, destinosTemp,
+						habitacion, contador);
+				if (regRobot == "NO")
+					movRealizado = false;
+				
+				System.out.println(robot.getHistorialMovimientos());
 			}
 
 			contador += 2;

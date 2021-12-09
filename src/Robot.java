@@ -101,7 +101,7 @@ public class Robot {
 		}
 	}
 
-	public boolean moverRobCajaDestino(int[] caja, int[] destino, int[][] cajasTemp, int[][] destinosTemp,
+	public String moverRobCajaDestino(int[] caja, int[] destino, int[][] cajasTemp, int[][] destinosTemp,
 			ArrayList<String> habitacion, int indice) {
 
 		// CALCULAR LA POSICION DONDE TIENE QUE IR EL ROBOT AL LADO DE LA CAJA
@@ -144,35 +144,35 @@ public class Robot {
 		// al llegar al destino marcarlo en la habitacion
 
 		// Mover el robot al destino
-		// Metodo que lo mueve aleatoriamente y se queda con el mas corto
+		String robAdestTemp = moverRobDestinoDeCaja(destinoRobotCaja, habitacion, cajasTemp, destinosTemp);
 
-		boolean robAdestTemp = moverRobDestinoDeCaja(destinoRobotCaja, habitacion, cajasTemp, destinosTemp);
-		
-		//Porque no consigue llegar nunca al destino, hay una barrera o algo
-		if(!robAdestTemp) {
-			return false;
+		// Porque no consigue llegar nunca al destino, hay una barrera o algo
+		// COMPROBAR SI REALMENTE EL CATH PUEDE RECOGER UN STACK OVERFLOW
+		if (robAdestTemp=="NO") {
+			return "NO";
 		}
 
-		return true;
+		// MOVER CAJA A DESTINO
+
+		// BORRAAAAAR
+		return robAdestTemp;
 
 	}
 
-	private boolean moverRobDestinoDeCaja(int[] destino, ArrayList<String> habitacion, int[][] cajasTemp,
+	private String moverRobDestinoDeCaja(int[] destino, ArrayList<String> habitacion, int[][] cajasTemp,
 			int[][] destinosTemp) {
 
 		// Meter en try catch???? por si no llega nunca al destino
 		Robot robotTemp = new Robot(this.getX(), this.getY(), "@");
 		robotTemp.addMovimiento("x");
-		
+
 		try {
 			moverRobDestinoDeCajaRecursivo(robotTemp, destino, habitacion, cajasTemp, destinosTemp);
-			return true;
+			return robotTemp.getHistorialMovimientos();
 		} catch (Exception e) {
 			// TODO: handle exception
-			return false;
+			return "NO";
 		}
-		
-		
 
 	}
 
@@ -185,7 +185,8 @@ public class Robot {
 			this.addMovimiento(robotTemp.getHistorialMovimientos());
 		} else {
 			// Destino encima de robotTemp
-			if (destino[1] < robotTemp.getY() && robotTemp.getHistorialMovimientos().charAt(robotTemp.getHistorialMovimientos().length()-1)!='b') {
+			if (destino[1] < robotTemp.getY() && robotTemp.getHistorialMovimientos()
+					.charAt(robotTemp.getHistorialMovimientos().length() - 1) != 'b') {
 				if (robotTemp.mirarArriba(cajasTemp, destinosTemp, habitacion) == '-'
 						|| robotTemp.mirarArriba(cajasTemp, destinosTemp, habitacion) == '!') {
 					robotTemp.moverArriba();
@@ -200,7 +201,8 @@ public class Robot {
 					robotTemp.moverIzq();
 				}
 				// Destino a la derecha del robot
-			} else if (destino[0] > robotTemp.getX()&& robotTemp.getHistorialMovimientos().charAt(robotTemp.getHistorialMovimientos().length()-1)!='i') {
+			} else if (destino[0] > robotTemp.getX() && robotTemp.getHistorialMovimientos()
+					.charAt(robotTemp.getHistorialMovimientos().length() - 1) != 'i') {
 				if (robotTemp.mirarDcha(cajasTemp, destinosTemp, habitacion) == '-'
 						|| robotTemp.mirarDcha(cajasTemp, destinosTemp, habitacion) == '!') {
 					robotTemp.moverDch();
@@ -213,9 +215,10 @@ public class Robot {
 				} else if (robotTemp.mirarArriba(cajasTemp, destinosTemp, habitacion) == '-'
 						|| robotTemp.mirarArriba(cajasTemp, destinosTemp, habitacion) == '!') {
 					robotTemp.moverArriba();
-				} 
+				}
 				// Destino debajo del robot
-			} else if (destino[1] > robotTemp.getY()&& robotTemp.getHistorialMovimientos().charAt(robotTemp.getHistorialMovimientos().length()-1)!='a') {
+			} else if (destino[1] > robotTemp.getY() && robotTemp.getHistorialMovimientos()
+					.charAt(robotTemp.getHistorialMovimientos().length() - 1) != 'a') {
 				if (robotTemp.mirarAbajo(cajasTemp, destinosTemp, habitacion) == '-'
 						|| robotTemp.mirarAbajo(cajasTemp, destinosTemp, habitacion) == '!') {
 					robotTemp.moverAbajo();
@@ -230,7 +233,8 @@ public class Robot {
 					robotTemp.moverDch();
 				}
 				// Destino a la izquierda del robot
-			} else if (destino[0] < robotTemp.getX()&& robotTemp.getHistorialMovimientos().charAt(robotTemp.getHistorialMovimientos().length()-1)!='d') {
+			} else if (destino[0] < robotTemp.getX() && robotTemp.getHistorialMovimientos()
+					.charAt(robotTemp.getHistorialMovimientos().length() - 1) != 'd') {
 				if (robotTemp.mirarIzq(cajasTemp, destinosTemp, habitacion) == '-'
 						|| robotTemp.mirarIzq(cajasTemp, destinosTemp, habitacion) == '!') {
 					robotTemp.moverIzq();
@@ -243,12 +247,14 @@ public class Robot {
 				} else if (robotTemp.mirarAbajo(cajasTemp, destinosTemp, habitacion) == '-'
 						|| robotTemp.mirarAbajo(cajasTemp, destinosTemp, habitacion) == '!') {
 					robotTemp.moverAbajo();
-				} 
+				}
 
 			}
-			
-			//Habitacion habTemp = new Habitacion(habitacion, robotTemp.getX(), robotTemp.getY(), robotTemp.simbolRobot(), habitacion.size(), habitacion.get(0).length(), cajasTemp, destinosTemp);
-			//habTemp.printHabitacion();
+
+			// Habitacion habTemp = new Habitacion(habitacion, robotTemp.getX(),
+			// robotTemp.getY(), robotTemp.simbolRobot(), habitacion.size(),
+			// habitacion.get(0).length(), cajasTemp, destinosTemp);
+			// habTemp.printHabitacion();
 
 			moverRobDestinoDeCajaRecursivo(robotTemp, destino, habitacion, cajasTemp, destinosTemp);
 		}
