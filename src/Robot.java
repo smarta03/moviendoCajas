@@ -103,25 +103,32 @@ public class Robot {
 		}
 	}
 
-	public void moverRobCajaDestino(int[] caja, int[] destino, int[][] cajasTemp, int[][] destinosTemp,
+	public boolean moverRobCajaDestino(int[] caja, int[] destino, int[][] cajasTemp, int[][] destinosTemp,
 			ArrayList<String> habitacion, int indice) {
-		
+
 		//CALCULAR LA POSICION DONDE TIENE QUE IR EL ROBOT AL LADO DE LA CAJA
 		//TENIENDO EN CUENTA LA POSICION DEL DESTINO. SI ESA UBICACION ESTA OCUPADA
 		//TOMAR DECISION DE LA NUEVA POSICION
-		
+
 		int[] destinoRobotCaja = new int[2];
+
+		//Selecciona el destino al lado de la caja de forma especifica, comprueba que el destino es valido en el orden de:
+		//arriba, derecha, abajo e izquierda
 		
-		//if(caja[0]) {}
-		
-		
+		if() {
+			
+		}
+
+		//Despues de calcular el punto comprobar si es valido y sino calcular otro que sea posible solucion
+
+
 		//Es necesario actualizar las posiciones de las cajas en cajasTemp y caja,
 		//al llegar al destino marcarlo en la habitacion
 
+
 		while (caja[0]!=destino[0] && caja[1]!=destino[1]) {
-			char temp = mirarArriba(cajasTemp, destinosTemp, habitacion);
-			
-			
+
+
 
 			/*
 			 * //Mover arriba if(getX()>caja[0] && mirarArriba(cajasTemp, destinosTemp,
@@ -136,6 +143,8 @@ public class Robot {
 			 * System.out.print(temp);
 			 */
 		}
+		
+		return true;
 
 	}
 
