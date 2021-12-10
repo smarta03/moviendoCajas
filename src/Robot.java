@@ -137,26 +137,54 @@ public class Robot {
 			destinoRobotCaja[1] = caja[1];
 		}
 
-		// System.out.println("Destino al lado de caja: "+ destinoRobotCaja[0] + "," +
-		// destinoRobotCaja[1]);
-
-		// Es necesario actualizar las posiciones de las cajas en cajasTemp y caja,
-		// al llegar al destino marcarlo en la habitacion
-
-		// Mover el robot al destino
-		String robAdestTemp = moverRobDestinoDeCaja(destinoRobotCaja, habitacion, cajasTemp, destinosTemp);
+		// Mover el robot al lado de la caja
+		String resultado = moverRobDestinoDeCaja(destinoRobotCaja, habitacion, cajasTemp, destinosTemp);
 
 		// Porque no consigue llegar nunca al destino, hay una barrera o algo
 		// COMPROBAR SI REALMENTE EL CATH PUEDE RECOGER UN STACK OVERFLOW
-		if (robAdestTemp=="NO") {
+		if (resultado == "NO") {
 			return "NO";
 		}
 
 		// MOVER CAJA A DESTINO
+		
+		resultado = resultado + moverRobDeCajaADestino(caja, destino, cajasTemp, habitacion, indice);
+		
+		
+		
+		
+		return resultado;
 
-		// BORRAAAAAR
-		return robAdestTemp;
+	}
 
+	private String moverRobDeCajaADestino(int[] caja, int[] destino, int[][] cajasTemp, ArrayList<String> habitacion,
+			int indice) {
+		
+		//DEVUELVE LA CADENA DE LOS MOVIEMIENTOS REALIZADOS HASTA LLEGAR AL DESTINO
+		
+		// El registro del robot temporal esta vacio
+		
+		// La ubicacion del robot temporal es CORRECTA
+		
+		// Los movimientos del robot de la caja al destino se almacenan en resultado
+		
+		// Es necesario actualizar las posiciones de las cajas en cajasTemp y caja,
+		// al llegar al destino marcarlo en la habitacion. El destino marcado como 
+		// se marca a la llegada del metodo y NO DENTRO! y se marca en la habitacion
+		//en la ubicacion de destino
+		
+		// CONFIRMADO SE MODFICIA --> IMPORTANTE: comprobar que la habitacion cuando se
+		// marca el destino se cambia tambien al llegar
+		// a la clase Habitacion ya que es un ArrayList.
+		
+		// El indice va de dos en dos, hay que trarlo en el recursivo al encontrar el
+		// caso base
+		
+		
+		
+		
+		
+		return " ";
 	}
 
 	private String moverRobDestinoDeCaja(int[] destino, ArrayList<String> habitacion, int[][] cajasTemp,

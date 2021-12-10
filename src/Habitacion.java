@@ -48,9 +48,13 @@ public class Habitacion {
 		int originalX = robot.getX();
 		int originalY = robot.getY();
 
-		for (int i = 0; i < Math.pow(cajas.length, destinos.length); i++) {
+		for (int i = 0; i < 100; i++) {
 			regRobotTemp[0] += "x";
 		}
+		
+		//PASARLO A VUELTA ATRAS PARA CONTROLAR EL CASO EN EL QUE NO EXISTA SOLUCION
+		//SE ASIGNA LA CADE LARGA DE X'S
+		String regRobotTempClone = new String(regRobotTemp[0]);
 
 		// Mover robot segun combinaciones
 		for (int i = 0; i < parciales.size(); i++) {
@@ -76,6 +80,9 @@ public class Habitacion {
 		camino = cadenaACoord(solParc);
 		int contador = 0;
 
+		//IMPORTANTE
+		//VER SI HAY QUE ACTUALIZAR CAJAS Y DESTINOS GLOBAL!!!
+		//-------------------------------------------------------------------------------
 		int[][] cajasTemp = new int[camino.length / 2][2];
 		int[][] destinosTemp = new int[camino.length / 2][2];
 
@@ -83,6 +90,7 @@ public class Habitacion {
 		boolean existeSolucionTemp = true;
 
 		String acumuladorRegistro = "";
+		String registroTempSave = regRobotTemp[0];
 
 		for (int i = 0, j = 0; i < cajasTemp.length * 2; i += 2, j++) {
 			cajasTemp[j] = camino[i];
@@ -129,7 +137,9 @@ public class Habitacion {
 		} else {
 			// Si no se realiza el movimiento el registro del robot sera el registro
 			// anterior
-
+			robot.removeHistorialMovimientos();
+			//robot.addMovimiento(registroTempSave);
+			
 		}
 
 	}
