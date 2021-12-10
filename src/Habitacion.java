@@ -41,40 +41,36 @@ public class Habitacion {
 
 		parciales = calculadorSolucionesParciales();
 
-		boolean[] esSolucion = { true };
-		boolean[] esMasCorto = { true };
-		String regRobotTemp = "x";
-		String regRobotSolucion = "";
+		// boolean[] esSolucion = { true };
+		// boolean[] esMasCorto = { true };
+		String[] regRobotTemp = { "x" };
+		// String[] regRobotSolucion = { "" };
 		int originalX = robot.getX();
 		int originalY = robot.getY();
 
 		for (int i = 0; i < Math.pow(cajas.length, destinos.length); i++) {
-			regRobotTemp += "x";
+			regRobotTemp[0] += "x";
 		}
 
 		// Mover robot segun combinaciones
 		for (int i = 0; i < parciales.size(); i++) {
-			vueltaAtras(parciales.get(i), esSolucion, esMasCorto, regRobotTemp);
+			vueltaAtras(parciales.get(i), regRobotTemp);
 			// Aqui compruebo si devuelve que hay solucion o si el
 			// registro del robot es mas largo. Restablece estas
 			// variables
-			if (esSolucion[0] && esMasCorto[0]) {
-				regRobotTemp = robot.getHistorialMovimientos();
-				regRobotSolucion = regRobotTemp.toString();
-			}
 
 			// Reiniciar registro robot y almanarlo en otro sitio
 			// Devolver al robot y las cajas a la posicion original
-			esSolucion[0] = true;
-			esMasCorto[0] = true;
-			robot.removeHistorialMovimientos();
+
 			robot.setX(originalX);
 			robot.setY(originalY);
 		}
 
+		System.out.println();
+
 	}
 
-	private void vueltaAtras(String solParc, boolean[] esSolucion, boolean[] esMasCorto, String regRobot) {
+	private void vueltaAtras(String solParc, String[] regRobotTemp) {
 
 		int[][] camino = new int[cajas.length * 2][2];
 		camino = cadenaACoord(solParc);
@@ -84,43 +80,56 @@ public class Habitacion {
 		int[][] destinosTemp = new int[camino.length / 2][2];
 
 		boolean movRealizado = true;
+		boolean existeSolucionTemp = true;
+
+		String acumuladorRegistro = "";
 
 		for (int i = 0, j = 0; i < cajasTemp.length * 2; i += 2, j++) {
 			cajasTemp[j] = camino[i];
 			destinosTemp[j] = camino[i + 1];
 		}
 
-		while (esSolucion[0] && esMasCorto[0] && contador < camino.length && movRealizado) {
+		while (contador < camino.length && movRealizado && existeSolucionTemp) {
 
-			// Comprueba si hay solucion para esas cajas y destinos en esa habitacion y si
+			// existeSolucion: Comprueba si hay solucion para esas cajas y destinos en esa
+			// habitacion y si
 			// el robot se puede mover.
 			// Las cajas y destinos las actualiza el robot.
 			// Puede recibir cajas ya solucionadas.
+			
+			if (existeSolucion(cajasTemp, destinosTemp, contador)) {
 
-			if (!existeSolucion(cajasTemp, destinosTemp, contador)) {
-				esSolucion[0] = false;
-			} else if (robot.getHistorialMovimientos().length() > regRobot.length()) {
-				esMasCorto[0] = false;
-			} else {
 				// Mueve el robot a la siguiente caja y la lleva al destino registrando
 				// los movimientos. Actualiza cajasTemp y destinosTemp
 				// IMPORTANTE!!!La caja en el destino se indica en la habitacion
-				regRobot = robot.moverRobCajaDestino(camino[contador], camino[contador + 1], cajasTemp, destinosTemp,
-						habitacion, contador);
-				if (regRobot == "NO")
+				regRobotTemp[0] = robot.moverRobCajaDestino(camino[contador], camino[contador + 1], cajasTemp,
+						destinosTemp, habitacion, contador);
+				if (regRobotTemp[0] == "NO") {
 					movRealizado = false;
-				
-				System.out.println(robot.getHistorialMovimientos());
+				} else {
+					movRealizado = true;
+				}
+				// System.out.println(robot.getHistorialMovimientos());
+
+				acumuladorRegistro = acumuladorRegistro + regRobotTemp[0];
+
+			} else {
+				existeSolucionTemp = false;
 			}
 
 			contador += 2;
+
 		}
 
-		// EL ROBOT NO HA PODIDO REALIZAR EL MOVIMIENTO, EL REGISTRO DEL ROBOT PASA A
-		// SER EL TEMPORAL ANTERIOR
-		if (movRealizado == false) {
+		if (movRealizado && acumuladorRegistro.length() < robot.getHistorialMovimientos().length() && existeSolucionTemp) {
 			robot.removeHistorialMovimientos();
-			robot.addMovimiento(regRobot);
+			robot.addMovimiento(acumuladorRegistro);
+			// esMasCorto[0] = true;
+
+		} else {
+			// Si no se realiza el movimiento el registro del robot sera el registro
+			// anterior
+
 		}
 
 	}
@@ -542,7 +551,7 @@ public class Habitacion {
 		return combinaciones;
 	}
 
-	// http://chuwiki.chuidiang.org/index.php?title=Escribir_permutaciones_en_Java
+// http://chuwiki.chuidiang.org/index.php?title=Escribir_permutaciones_en_Java
 	private void permutarSimple(String a, LinkedList<String> conjunto, ArrayList<String> perm) {
 		// TODO Auto-generated method stub
 

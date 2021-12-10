@@ -168,6 +168,7 @@ public class Robot {
 
 		try {
 			moverRobDestinoDeCajaRecursivo(robotTemp, destino, habitacion, cajasTemp, destinosTemp);
+			robotTemp.eliminarCaracterXRegistro();
 			return robotTemp.getHistorialMovimientos();
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -478,5 +479,12 @@ public class Robot {
 			}
 		}
 		return c;
+	}
+
+	private void eliminarCaracterXRegistro() {
+		String regTemp = this.getHistorialMovimientos();
+		regTemp = regTemp.replace("x", "");
+		this.removeHistorialMovimientos();
+		this.addMovimiento(regTemp);
 	}
 }
