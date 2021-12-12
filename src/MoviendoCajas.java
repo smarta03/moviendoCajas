@@ -33,13 +33,14 @@ public class MoviendoCajas {
 		if(!entradaValida) {
 			System.out.println("Entrada mal formada");
 		} else {
+			
 		//La entrada esta bien formada
 			
 			guardarCajasYDestinos();
 			
 			Habitacion hab = new Habitacion(habitacion,coordXRobot,coordYRobot,simboloRobotInicial,
 					n,m, cajas, destinos);
-		    hab.solucionarHabitacion();
+		    hab.solucionarHabitacion2();
 		}
 
 	}
@@ -157,7 +158,7 @@ public class MoviendoCajas {
 
 		scan.close();
 
-		//Comprueba que el tamaño de la matriz corresponde con n y m
+		//Comprueba que el tamaï¿½o de la matriz corresponde con n y m
  //Comprueba n
 		if(habitacion.size()!=n)
 			entradaBienFormada = false;

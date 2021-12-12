@@ -23,6 +23,342 @@ public class Habitacion {
 		destinos = coordDestinos;
 	}
 
+	public void solucionarHabitacion2() {
+
+		ArrayList<String> parciales = new ArrayList<String>();
+		parciales = calculadorSolucionesParciales();
+
+		int[][] solParcCoor = new int[cajas.length * 2][2];
+		int[][] cajasTemp = new int[cajas.length][2];
+		int[][] destinosTemp = new int[destinos.length][2];
+		boolean[] esMasCorto = { true };
+		boolean[] haySolucion = { true };
+		int[] contador = {0};
+
+		Robot robotTemp = new Robot(robot.getX(), robot.getY(), "@");
+
+		// Rellenar el registro de robot para que fijo sea mas grande que el temporal en
+		// la primera vuelta
+
+		for (int i = 0; i < 10; i++) {
+			robot.addMovimiento("xxxxxxxxxxxxxxxxxxxx");
+		}
+
+
+		// Desplazarse por todas las soluciones parciales
+		for (int i = 0; i < parciales.size(); i++) {
+			// Tengo una solucion parcial en coordenadas
+			solParcCoor = cadenaACoord(parciales.get(i));
+			// Rellenar cajasTemp y destinosTemp
+			for (int j = 0; j < solParcCoor.length; j+=2) {
+				cajasTemp[j/2][0] = solParcCoor[j][0];
+				cajasTemp[j/2][1] = solParcCoor[j][1];
+				destinosTemp[j/2][0] = solParcCoor[j+1][0];
+				destinosTemp[j/2][1] = solParcCoor[j+1][1];
+			}
+
+			//System.out.println();
+
+			// Solucionar la parcial
+			// Para si el registro del robot temporal es mayor que el del actual
+			// o si ha pasado por todos los puntos de las solucion parcial
+
+			while (esMasCorto[0] == true && haySolucion[0] && contador[0] < cajasTemp.length) {
+
+				// Mueve el robotTemp a cajasTemp[contador] y la lleva a destinosTemp[contador]
+				// Marca la caja en destino en la habitacion
+				//Actualiza
+				try {
+					moverRobotCajaDestino(robotTemp, cajasTemp, destinosTemp, contador, haySolucion);
+				} catch (StackOverflowError e) {
+					// TODO: handle exception
+					haySolucion[0] = false;
+					robotTemp.removeHistorialMovimientos();
+					robotTemp.addMovimiento(robot.getHistorialMovimientos());
+				}
+
+				// AQUI comprobar que el registro del robotTemp es mas corto que el del robot
+				if (robot.getHistorialMovimientos().length() <= robotTemp.getHistorialMovimientos().length()) {
+					esMasCorto[0] = false;
+				}
+
+				contador[0] ++;
+
+			}
+
+			// Asignar el registro de temp a robot en caso de ser mas corto y existir solucion
+			if (esMasCorto[0] && haySolucion[0]) {
+				robot.removeHistorialMovimientos();
+				robot.addMovimiento(robotTemp.getHistorialMovimientos());
+				System.out.println(robot.getHistorialMovimientos());
+			}
+
+			robotTemp.removeHistorialMovimientos();
+			esMasCorto[0] = true;
+			haySolucion[0] = true;
+			contador[0] = 0;
+			robotTemp.setX(robot.getX());
+			robotTemp.setY(robot.getY());
+
+		}
+		
+		if(robot.getHistorialMovimientos().contains("x")) {
+			System.out.println("NO HAY SOLUCION");
+		} else {
+			System.out.println(robot.getHistorialMovimientos());
+		}
+
+	}
+
+	private void moverRobotCajaDestino(Robot robotTemp, int[][] cajasTemp, int[][] destinosTemp, int[] contador, boolean[] haySolucion) {
+
+		int contCamino = 0;
+
+		//Elegir el destino cerca de la caja donde debe ir el robot
+
+		//Crear robot encima de la caja para ver que tiene alrededor y decidir en base a la posicion del destino
+		Robot robotMov = new Robot(cajasTemp[contador[0]][0], cajasTemp[contador[0]][1],"@");
+		int[] destinoCajaRob = {0,0};
+
+		calcularPosRobotCaja(cajasTemp, destinosTemp, contador, haySolucion, robotMov, destinoCajaRob);
+
+		if(haySolucion[0]) {
+			
+			//1 Mover robot hasta la caja
+			//Buscar el camino mas corto desde el robotTemp hasta cajasTemp[indice]
+			
+			//PASAR UNA COPIA DE LA HABITACION
+			ArrayList<String> habitacionTemp = new ArrayList<String>(habitacion);
+			
+			robotACajaRecursivo(robotTemp.getX(), robotTemp.getY(), destinoCajaRob[0], destinoCajaRob[1]
+					,contCamino, habitacionTemp, robotTemp, cajasTemp, destinosTemp, haySolucion);
+			
+			//2 Mover la caja con el robot al destino
+			//Buscar el caminos mas corto entre cajasTemp[contador] y destinosTemp[contador]
+			//Mover la cajasTemp[contador] hasta destinosTemp[contador]
+			
+			//Marcar el destino como completado en la habitacion general
+			//Mover cajasTemp[contador] a la nueva ubicacion que sera el destino si ha habido solucion
+
+		} 
+		
+		if(!haySolucion[0]) {
+			robotTemp.removeHistorialMovimientos();
+			//robotTemp.addMovimiento(robot.getHistorialMovimientos());
+		}
+
+	}
+
+	private void calcularPosRobotCaja(int[][] cajasTemp, int[][] destinosTemp, int[] contador, boolean[] haySolucion,
+			Robot robotMov, int[] destinoCajaRob) {
+		
+		//Destino encima en linea
+		if(destinosTemp[contador[0]][0]==robotMov.getX() && destinosTemp[contador[0]][1]<robotMov.getY()) {
+			if(robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()+1;
+			} else if (robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()+1;
+				destinoCajaRob[1] = robotMov.getY();
+			} else if (robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()-1;
+				destinoCajaRob[1] = robotMov.getY();
+			} else {
+				haySolucion[0]=false;
+			}
+			
+			if(robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='0') {
+				haySolucion[0] = false;
+			}
+
+			//Destino a la derecha en linea
+		} else if (destinosTemp[contador[0]][0]>robotMov.getX() && destinosTemp[contador[0]][1]==robotMov.getY()) {
+			if (robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()-1;
+				destinoCajaRob[1] = robotMov.getY();			
+			} else if(robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()+1;
+			} else if (robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()-1;
+			} else {
+				haySolucion[0]=false;
+			}
+
+			if(robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='0') {
+				haySolucion[0] = false;
+			}
+
+			//Destino debajo en linea
+		} else if (destinosTemp[contador[0]][0]==robotMov.getX() && destinosTemp[contador[0]][1]>robotMov.getY()) {
+			if (robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()-1;
+			} else if (robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()+1;
+				destinoCajaRob[1] = robotMov.getY();
+			} else if (robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()-1;
+				destinoCajaRob[1] = robotMov.getY();
+			} else {
+				haySolucion[0]=false;
+			}
+
+			if(robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='0') {
+				haySolucion[0] = false;
+			}
+
+			//Destino izquierda en linea
+		} else if (destinosTemp[contador[0]][0]<robotMov.getX() && destinosTemp[contador[0]][1]==robotMov.getY()) {
+			if (robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()+1;
+				destinoCajaRob[1] = robotMov.getY();			
+			} else if(robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()+1;
+			} else if (robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()-1;
+			} else {
+				haySolucion[0]=false;
+			}
+			
+			if(robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='0') {
+				haySolucion[0] = false;
+			}
+
+			//Destino arriba derecha
+		} else if (destinosTemp[contador[0]][0]>robotMov.getX() && destinosTemp[contador[0]][1]<robotMov.getY()) {
+			if(robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()+1;
+			} else if (robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()-1;
+				destinoCajaRob[1] = robotMov.getY();
+			} else {
+				haySolucion[0]=false;
+			}
+
+			//Destino abajo derecha
+		} else if (destinosTemp[contador[0]][0]>robotMov.getX() && destinosTemp[contador[0]][1]>robotMov.getY()) {
+			if (robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()-1;
+			} else if (robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarIzq(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()-1;
+				destinoCajaRob[1] = robotMov.getY();
+			} else {
+				haySolucion[0]=false;
+			}
+			//Destino abajo izquierda
+		} else if (destinosTemp[contador[0]][0]<robotMov.getX() && destinosTemp[contador[0]][1]>robotMov.getY()) {
+			if (robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarArriba(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()-1;
+			} else if (robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()+1;
+				destinoCajaRob[1] = robotMov.getY();
+			} else {
+				haySolucion[0]=false;
+			}
+			//Destino arriba izquierda
+		} else if (destinosTemp[contador[0]][0]<robotMov.getX() && destinosTemp[contador[0]][1]<robotMov.getY()) {
+			if(robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarAbajo(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX();
+				destinoCajaRob[1] = robotMov.getY()+1;
+			} else if (robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='-' ||
+					robotMov.mirarDcha(cajasTemp, destinosTemp, habitacion)=='!') {
+				destinoCajaRob[0] = robotMov.getX()+1;
+				destinoCajaRob[1] = robotMov.getY();
+			} else {
+				haySolucion[0]=false;
+			}
+		}
+	}
+
+	private void robotACajaRecursivo(int xInicio, int yInicio, int xFin, int yFin, int contador, ArrayList<String> habitacionTemp, Robot robotTemp,
+			int[][] cajasTemp, int[][] destinosTemp, boolean[] haySolucion) {
+		// TODO Auto-generated method stub
+
+		Habitacion habitacionPrint = new Habitacion(habitacionTemp, robotTemp.getX(), robotTemp.getY(), "@",n,m, cajasTemp, destinosTemp);
+
+		habitacionPrint.printHabitacion();
+
+		//Las cordenadas de inicio llegan al final
+		if (xInicio == xFin && yInicio == yFin) {
+			//Mover el robot a la posicion final
+			robotTemp.setX(xFin);
+			robotTemp.setY(yFin);
+
+		} else {
+			
+//Marcamos donde estamos ahora con el robot con un 0 en la habitacion para np volver a pasar
+//y evitar bucles
+
+//			habitacionTemp.set(robotTemp.getY(), habitacionTemp.get(robotTemp.getY()).substring(0, robotTemp.getX())
+//					+ "0" +  habitacionTemp.get(robotTemp.getY()).substring(robotTemp.getX()+1, habitacionTemp.get(robotTemp.getY()).length()) );	
+	
+			//Arriba
+			if(yFin<yInicio && robotTemp.mirarArriba(cajasTemp, destinosTemp, habitacionTemp) == '-'
+					|| yFin<yInicio && robotTemp.mirarArriba(cajasTemp, destinosTemp, habitacionTemp) == '!') {
+				robotTemp.moverArriba();
+				robotACajaRecursivo(robotTemp.getX(), robotTemp.getY(), xFin, yFin, contador+1, habitacionTemp, robotTemp, cajasTemp, destinosTemp, haySolucion);
+
+
+				//Derecha
+			} else if(xFin>xInicio && robotTemp.mirarDcha(cajasTemp, destinosTemp, habitacionTemp) == '-'
+					|| xFin>xInicio && robotTemp.mirarDcha(cajasTemp, destinosTemp, habitacionTemp) == '!') {
+				robotTemp.moverDch();
+				robotACajaRecursivo(robotTemp.getX(), robotTemp.getY(), xFin, yFin, contador+1, habitacionTemp, robotTemp, cajasTemp, destinosTemp, haySolucion);
+
+
+				//Abajo
+			} else if(yFin>yInicio && robotTemp.mirarAbajo(cajasTemp, destinosTemp, habitacionTemp) == '-'
+					|| yFin>yInicio && robotTemp.mirarAbajo(cajasTemp, destinosTemp, habitacionTemp) == '!') {
+				robotTemp.moverAbajo();
+				robotACajaRecursivo(robotTemp.getX(), robotTemp.getY(), xFin, yFin, contador+1, habitacionTemp, robotTemp, cajasTemp, destinosTemp, haySolucion);
+
+
+				//Izquierda
+			} else if(xFin<xInicio && robotTemp.mirarIzq(cajasTemp, destinosTemp, habitacionTemp) == '-'
+					|| xFin<xInicio && robotTemp.mirarIzq(cajasTemp, destinosTemp, habitacionTemp) == '!') {
+				robotTemp.moverIzq();
+				robotACajaRecursivo(robotTemp.getX(), robotTemp.getY(), xFin, yFin, contador+1, habitacionTemp, robotTemp, cajasTemp, destinosTemp, haySolucion);
+			//No se puede mover al destino
+			} else {
+				haySolucion[0] = false; 
+				System.out.println("No hay solucion");
+			}
+
+			//Desbloqueo del sitio donde estamos
+			//			habitacionTemp.set(robotTemp.getY(), habitacionTemp.get(robotTemp.getY()).substring(0, robotTemp.getX())
+			//					+ "-" +  habitacionTemp.get(robotTemp.getY()).substring(robotTemp.getX()+1, habitacionTemp.get(robotTemp.getY()).length()) );
+			//			
+
+		}
+
+	}
+
 	public void solucionarHabitacion() {
 
 		// ELIMINAR BLOQUE
@@ -51,7 +387,7 @@ public class Habitacion {
 		for (int i = 0; i < 100; i++) {
 			regRobotTemp[0] += "x";
 		}
-		
+
 		//PASARLO A VUELTA ATRAS PARA CONTROLAR EL CASO EN EL QUE NO EXISTA SOLUCION
 		//SE ASIGNA LA CADE LARGA DE X'S
 		String regRobotTempClone = new String(regRobotTemp[0]);
@@ -104,7 +440,7 @@ public class Habitacion {
 			// el robot se puede mover.
 			// Las cajas y destinos las actualiza el robot.
 			// Puede recibir cajas ya solucionadas.
-			
+
 			if (existeSolucion(cajasTemp, destinosTemp, contador)) {
 
 				// Mueve el robot a la siguiente caja y la lleva al destino registrando
@@ -139,7 +475,7 @@ public class Habitacion {
 			// anterior
 			robot.removeHistorialMovimientos();
 			//robot.addMovimiento(registroTempSave);
-			
+
 		}
 
 	}
@@ -561,7 +897,7 @@ public class Habitacion {
 		return combinaciones;
 	}
 
-// http://chuwiki.chuidiang.org/index.php?title=Escribir_permutaciones_en_Java
+	// http://chuwiki.chuidiang.org/index.php?title=Escribir_permutaciones_en_Java
 	private void permutarSimple(String a, LinkedList<String> conjunto, ArrayList<String> perm) {
 		// TODO Auto-generated method stub
 
@@ -635,40 +971,41 @@ public class Habitacion {
 		}
 	}
 
-//	public void printHabitacion2() {
-//
-//		char[][] habitacionChar = new char[n][m];
-//		int[] cajaTemp = new int[2];
-//		int[] destinoTemp = new int[2];
-//
-//		int contadorCajas = 0;
-//		int contadorDestinos = 0;
-//
-//		for (int i = 0; i < habitacionChar.length; i++) {
-//			for (int j = 0; j < habitacionChar[0].length; j++) {
-//				cajaTemp[0] = cajas[contadorCajas][0];
-//				cajaTemp[1] = cajas[contadorCajas][1];
-//				destinoTemp[0] = destinos[contadorDestinos][0];
-//				destinoTemp[1] = destinos[contadorDestinos][1];
-//				habitacionChar[i][j] = habitacion.get(i).charAt(j);
-//				if (cajaTemp[0] == j && cajaTemp[1] == i) {
-//					habitacionChar[i][j] = '#';
-//					if (contadorCajas < cajas.length-1)
-//						contadorCajas++;
-//				}
-//				if (destinoTemp[0] == j && destinoTemp[1] == i) {
-//					habitacionChar[i][j] = '!';
-//					if (contadorDestinos < destinos.length-1)
-//						contadorDestinos++;
-//				}
-//				if(robot.getY()==i && robot.getX()==j) {
-//					habitacionChar[i][j] = '@';
-//				}
-//				System.out.print(habitacionChar[i][j]);
-//			}
-//			System.out.println();
-//		}
-//
-//		
-//	}
+
+	//	public void printHabitacion2() {
+	//
+	//		char[][] habitacionChar = new char[n][m];
+	//		int[] cajaTemp = new int[2];
+	//		int[] destinoTemp = new int[2];
+	//
+	//		int contadorCajas = 0;
+	//		int contadorDestinos = 0;
+	//
+	//		for (int i = 0; i < habitacionChar.length; i++) {
+	//			for (int j = 0; j < habitacionChar[0].length; j++) {
+	//				cajaTemp[0] = cajas[contadorCajas][0];
+	//				cajaTemp[1] = cajas[contadorCajas][1];
+	//				destinoTemp[0] = destinos[contadorDestinos][0];
+	//				destinoTemp[1] = destinos[contadorDestinos][1];
+	//				habitacionChar[i][j] = habitacion.get(i).charAt(j);
+	//				if (cajaTemp[0] == j && cajaTemp[1] == i) {
+	//					habitacionChar[i][j] = '#';
+	//					if (contadorCajas < cajas.length-1)
+	//						contadorCajas++;
+	//				}
+	//				if (destinoTemp[0] == j && destinoTemp[1] == i) {
+	//					habitacionChar[i][j] = '!';
+	//					if (contadorDestinos < destinos.length-1)
+	//						contadorDestinos++;
+	//				}
+	//				if(robot.getY()==i && robot.getX()==j) {
+	//					habitacionChar[i][j] = '@';
+	//				}
+	//				System.out.print(habitacionChar[i][j]);
+	//			}
+	//			System.out.println();
+	//		}
+	//
+	//		
+	//	}
 }

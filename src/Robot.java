@@ -198,14 +198,14 @@ public class Robot {
 			moverRobDestinoDeCajaRecursivo(robotTemp, destino, habitacion, cajasTemp, destinosTemp);
 			robotTemp.eliminarCaracterXRegistro();
 			return robotTemp.getHistorialMovimientos();
-		} catch (Exception e) {
+		} catch (StackOverflowError e) {
 			// TODO: handle exception
 			return "NO";
 		}
 
 	}
 
-	private void moverRobDestinoDeCajaRecursivo(Robot robotTemp, int[] destino, ArrayList<String> habitacion,
+	public void moverRobDestinoDeCajaRecursivo(Robot robotTemp, int[] destino, ArrayList<String> habitacion,
 			int[][] cajasTemp, int[][] destinosTemp) {
 		// TODO Auto-generated method stub
 		if (robotTemp.getX() == destino[0] && robotTemp.getY() == destino[1]) {
@@ -325,7 +325,7 @@ public class Robot {
 
 	}
 
-	private char mirarIzq(int[][] cajas, int[][] destinos, ArrayList<String> habitacion) {
+	public char mirarIzq(int[][] cajas, int[][] destinos, ArrayList<String> habitacion) {
 		// TODO Auto-generated method stub
 
 		String cajasCad = "";
@@ -371,7 +371,7 @@ public class Robot {
 		return c;
 	}
 
-	private char mirarArriba(int[][] cajas, int[][] destinos, ArrayList<String> habitacion) {
+	public char mirarArriba(int[][] cajas, int[][] destinos, ArrayList<String> habitacion) {
 		// TODO Auto-generated method stub
 
 		String cajasCad = "";
@@ -417,7 +417,7 @@ public class Robot {
 		return c;
 	}
 
-	private char mirarDcha(int[][] cajas, int[][] destinos, ArrayList<String> habitacion) {
+	public char mirarDcha(int[][] cajas, int[][] destinos, ArrayList<String> habitacion) {
 		// TODO Auto-generated method stub
 
 		String cajasCad = "";
@@ -463,7 +463,7 @@ public class Robot {
 		return c;
 	}
 
-	private char mirarAbajo(int[][] cajas, int[][] destinos, ArrayList<String> habitacion) {
+	public char mirarAbajo(int[][] cajas, int[][] destinos, ArrayList<String> habitacion) {
 		// TODO Auto-generated method stub
 
 		String cajasCad = "";
